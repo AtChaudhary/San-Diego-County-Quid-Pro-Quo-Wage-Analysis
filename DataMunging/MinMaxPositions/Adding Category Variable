@@ -1,0 +1,46 @@
+# Re-create the position mapping to categorize positions
+position_mapping = {
+    'Police Officer': ['Police Officer', 'Officer'],
+    'Sergeant': ['Sergeant'],
+    'Lieutenant': ['Lieutenant'],
+    'Captain': ['Captain'],
+    'Chief': ['Chief'],
+    'Dispatcher': ['Dispatcher'],
+    'Detective': ['Detective'],
+    'Inspector': ['Inspector'],
+    'Investigator': ['Investigator'],
+    'Commander': ['Commander'],
+    'Deputy': ['Deputy'],
+    'Director': ['Director'],
+    'Assistant': ['Assistant'],
+    'Specialist': ['Specialist'],
+    'Supervisor': ['Supervisor'],
+    'Analyst': ['Analyst'],
+    'Corporal': ['Corporal'],
+    'Agent': ['Agent'],
+    'Records Clerk': ['Records Clerk'],
+    'Recruit': ['Recruit'],
+    'Services Manager': ['Services Manager']
+}
+
+# Function to map position names to categories
+def categorize_position(position):
+    for category, keywords in position_mapping.items():
+        if any(keyword.lower() in position.lower() for keyword in keywords):
+            return category
+    return 'Other'  # Default category for unclassified positions
+
+# Load the unique positions from the police data file to recategorize
+unique_positions = police_data['Position'].unique()
+unique_positions_df = pd.DataFrame(unique_positions, columns=['Unique Positions'])
+
+# Apply the categorization function
+unique_positions_df['Category'] = unique_positions_df['Unique Positions'].apply(categorize_position)
+
+# Save the categorized positions to a temporary file for merging
+categorized_positions_path = '/mnt/data/updated_police_positions_with_categories.csv'
+unique_positions_df.to_csv(categorized_positions_path, index=False)
+
+# Merging with the original filtered police data
+merged_data = police_data.merge(unique_positions_df, left_on='Position', right_on='Unique Positions', how='left')
+merged_data = merged_data.drop(columns=['Unique Positions']) 
